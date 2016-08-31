@@ -1,5 +1,5 @@
 '''
-Author: Ilona Szczot
+Author: kravitzlab
 Date: July 15 2016
 Purpose: The application processes multiple files with timestamps(first column of a csv file) corresponding to the
 single pellet retrieved by a mouse. It extracts only common full 12 hours daytime and nighttime intervals, in order
@@ -16,15 +16,15 @@ In addition, the program prints out the values in the console.
 
 
 '''
-Requirements: Anaconda(Python2.7)
-(for Python 3.5 change imports(line 28,29) to tkinter and filedialog)
+Requirements: Anaconda(Python3.5)
 Tested on Windows7.
 '''
 
 import os, sys
 import fnmatch
-from Tkinter import *
-import tkFileDialog
+import tkinter
+from tkinter import *
+from tkinter import filedialog
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 import datetime as dt
@@ -96,7 +96,7 @@ except:
 
 # display folders through Tkinter, tkFileDialog
 # set the path to the folder according to users choice
-src = tkFileDialog.askdirectory()
+src = filedialog.askdirectory()
 
 ########################################## functions
 
@@ -189,38 +189,59 @@ def get_intervals(list_of_timestamps, start_hour, end_hour, earliest, latest):
     interval = list()
     date2num_begin = md.date2num(earliest)      # beginning of plot      
     date2num_end = md.date2num(latest)          # end of plot
-    # check how many dates(calendar days) are in the file
+    # check how many dates(calendar days) are in the fed
     for el in list_of_timestamps:
         if el.date() not in dates_from_file:
-            dates_from_file.append(el.date())
-            
-    # for each date in file create start_hour-end_hour pair of night interval (datetime, number format)
-    for i in range(len(dates_from_file)):
-        # start interval
-        date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
-        if (i+1) < len(dates_from_file):        # makes sure it is not the last inteval
-            # end interval
-            date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i+1], dt.time(hour=end_hour)))
-        else:       ## it means it is the last interval
-            # if there is only one day on the list check if the start interval is later than beginning 
-            if len(dates_from_file) == 1:
-                temp0 = date2num if date2num >= date2num_begin else date2num_begin 
-                interval.append((temp0, date2num_end))
-                break
+            dates_from_file.append(el.date())     
+    # for each date in fed, create start_hour-end_hour pair of night interval (datetime, number format)
+    if start_hour >= 12:
+        for i in range(len(dates_from_file)):
+            # start interval
+            date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
+            if (i+1) < len(dates_from_file):        # makes sure it is not the last inteval
+                # end interval
+                date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i+1], dt.time(hour=end_hour)))
+            else:       ## it means it is the last interval
+                # if there is only one day on the list check if the start interval is later than beginning 
+                if len(dates_from_file) == 1:
+                    temp0 = date2num if date2num >= date2num_begin else date2num_begin 
+                    interval.append((temp0, date2num_end))
+                    break
+                else:
+                    if date2num <= date2num_end: 
+                        interval.append((date2num, date2num_end))
+                    break
+            # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
+            if date2num >= date2num_begin:
+                temp0 = date2num
+                # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
+                temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+            # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
             else:
-                if date2num <= date2num_end: 
-                    interval.append((date2num, date2num_end))
-                break
-        # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
-        if date2num >= date2num_begin:
-            temp0 = date2num
-            # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
-            temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
-        # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
-        else:
-            temp0 = date2num_begin
-            temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
-        interval.append((temp0,temp1))
+                temp0 = date2num_begin
+                temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+            interval.append((temp0,temp1))
+    else:   # lights out hour before noon
+        for i in range(len(dates_from_file)):
+            # start interval
+            date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
+            # end interval
+            date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=end_hour)))
+            if (i == len(dates_from_file) - 1) or i == 0:   # for the last interval or if it is the only one
+                # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
+                if date2num >= date2num_begin:
+                    temp0 = date2num
+                    # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
+                    temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+                # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
+                else:
+                    temp0 = date2num_begin
+                    temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+                interval.append((temp0,temp1))
+
+            else:   # if it is not the last or first interval
+                interval.append((date2num,date2num_next))
+        
     return interval
 
 # returns daytime intervals based on nights 
@@ -389,7 +410,7 @@ def get_avg_night_pellets_per_meal(night_meal_count, intervals):
         if temp_sum != 0:
             individual_meal_sums.append((temp_sum, len(el)))
             # print out the information
-            print "sum of all meal pellets per mouse : number of meals", temp_sum, len(el)
+            print ("sum of all meal pellets per mouse : number of meals", temp_sum, len(el))
 
     # count number of meals
     individual_mealNo = [individual_meal_sums[i][1] for i in range(len(individual_meal_sums))]
@@ -485,44 +506,44 @@ meals, durations = get_by_meal_size(get_by_meal_interval(data2plot, meal_interva
 ############################### print the analyzis in the console
 # get data for night stats
 print
-print "Night"
-print "-----"
+print ("Night")
+print ("-----")
 total_night_count, total_night_durations = night_count(meals, durations, full_nights)
 night_avg_pellet_per_meal, mealNo_night, mealNo_err_night, mealNo_night2test = get_avg_night_pellets_per_meal(total_night_count, full_nights)
-print "Night average pellets per meal, avg meals per cycle", night_avg_pellet_per_meal, mealNo_night, "err",mealNo_err_night
+print ("Night average pellets per meal, avg meals per cycle", night_avg_pellet_per_meal, mealNo_night, "err",mealNo_err_night)
 night_avg_meal_duration, duration_err_night, night_avg_meal_duration_p = get_avg_night_meal_duration(total_night_durations)
-print "Night average meal duration in min", night_avg_meal_duration, "err",duration_err_night
+print ("Night average meal duration in min", night_avg_meal_duration, "err",duration_err_night)
 night_meal_pellet_count, meal_count_err_night, night_meal_pelet_count2test = all_night_meal_pellets_count(total_night_count, full_nights)
-print "Total pellets retrieved during single night meals by average mouse", night_meal_pellet_count, "err",meal_count_err_night 
+print ("Total pellets retrieved during single night meals by average mouse", night_meal_pellet_count, "err",meal_count_err_night) 
 total_night_pellets = all_night_pellets(data2plot, full_nights)
-print "All single night pellets", total_night_pellets
+print ("All single night pellets", total_night_pellets)
 prctg_night = night_meal_pellet_count*100/float(total_night_pellets)
 prctg_night_err = meal_count_err_night*100/total_night_pellets
-print "%Pellets during night meals", prctg_night, "err",prctg_night_err
-print "------------------------------------------------------------"
+print ("%Pellets during night meals", prctg_night, "err",prctg_night_err)
+print ("------------------------------------------------------------")
 print
 # get data for day stats
-print "Day"
-print "---"
+print ("Day")
+print ("---")
 total_day_count, total_day_durations = night_count(meals, durations, full_days)
 day_avg_pellet_per_meal, mealNo_day, mealNo_err_day, mealNo_day2test  = get_avg_night_pellets_per_meal(total_day_count, full_days)
-print "Day average pellets per meal, avg meals per cycle", day_avg_pellet_per_meal, mealNo_day,"err",mealNo_err_day
+print ("Day average pellets per meal, avg meals per cycle", day_avg_pellet_per_meal, mealNo_day,"err",mealNo_err_day)
 day_avg_meal_duration, duration_err_day, day_avg_meal_duration_p = get_avg_night_meal_duration(total_day_durations)
-print "Day average meal duration in min", day_avg_meal_duration, "err", duration_err_day
+print ("Day average meal duration in min", day_avg_meal_duration, "err", duration_err_day)
 day_meal_pellet_count, meal_count_err_day, day_meal_pelet_count2test = all_night_meal_pellets_count(total_day_count, full_days)
-print "Total pellets retrieved during single day meals by average mouse", day_meal_pellet_count, "err",meal_count_err_day
+print ("Total pellets retrieved during single day meals by average mouse", day_meal_pellet_count, "err",meal_count_err_day)
 total_day_pellets = all_night_pellets(data2plot, full_days)
-print "All single day pellets", total_day_pellets
+print ("All single day pellets", total_day_pellets)
 prctg_day = day_meal_pellet_count*100/float(total_day_pellets)
 prctg_day_err = meal_count_err_day*100/total_day_pellets
-print "%Pellets during night meals", prctg_day, "err", prctg_day_err
+print ("%Pellets during night meals", prctg_day, "err", prctg_day_err)
 
 
 # ttest
 top_left_ttest, top_left_p = ttest_ind(night_meal_pelet_count2test, day_meal_pelet_count2test)
-print "Pellets in meals p = ", top_left_p
+print ("Pellets in meals p = ", top_left_p)
 top_right_ttest, top_right_p = ttest_ind(night_avg_meal_duration_p, day_avg_meal_duration_p)
-print "Meal duration(min) p = ", top_right_p
+print ("Meal duration(min) p = ", top_right_p)
 # data to ttest for % pellets within meals
 night_meal2total2ttest = []
 for el in night_meal_pelet_count2test:
@@ -531,9 +552,9 @@ day_meal2total2ttest = []
 for el in day_meal_pelet_count2test:
     day_meal2total2ttest.append(el/float(total_day_pellets))
 bottom_left_ttest, bottom_left_p = ttest_ind(night_meal2total2ttest, day_meal2total2ttest)
-print "Pellets during night meals(%) p = ", bottom_left_p
+print ("Pellets during night meals(%) p = ", bottom_left_p)
 bottom_right_ttest, bottom_right_p = ttest_ind(mealNo_night2test, mealNo_day2test)
-print "Meals per cycle p = ", bottom_right_p
+print ("Meals per cycle p = ", bottom_right_p)
 
 
 ############################################################# plot
@@ -652,17 +673,4 @@ if bottom_right_p < 0.05:
 plt.subplots_adjust(left=0.11, bottom=0.11, right=0.90, top=0.90, wspace=0.3, hspace=0.3)
 
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
 
