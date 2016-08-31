@@ -181,40 +181,60 @@ def get_intervals(list_of_timestamps, start_hour, end_hour, earliest, latest):
     interval = list()
     date2num_begin = md.date2num(earliest)      # beginning of plot      
     date2num_end = md.date2num(latest)          # end of plot
-    # check how many dates(calendar days) are in the file
+    # check how many dates(calendar days) are in the fed
     for el in list_of_timestamps:
         if el.date() not in dates_from_file:
-            dates_from_file.append(el.date())
-            
-    # for each date in file create start_hour-end_hour pair of night interval (datetime, number format)
-    for i in range(len(dates_from_file)):
-        # start interval
-        date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
-        if (i+1) < len(dates_from_file):        # makes sure it is not the last inteval
-            # end interval
-            date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i+1], dt.time(hour=end_hour)))
-        else:       ## it means it is the last interval
-            # if there is only one day on the list check if the start interval is later than beginning 
-            if len(dates_from_file) == 1:
-                temp0 = date2num if date2num >= date2num_begin else date2num_begin 
-                interval.append((temp0, date2num_end))
-                break
+            dates_from_file.append(el.date())     
+    # for each date in fed, create start_hour-end_hour pair of night interval (datetime, number format)
+    if start_hour >= 12:
+        for i in range(len(dates_from_file)):
+            # start interval
+            date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
+            if (i+1) < len(dates_from_file):        # makes sure it is not the last inteval
+                # end interval
+                date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i+1], dt.time(hour=end_hour)))
+            else:       ## it means it is the last interval
+                # if there is only one day on the list check if the start interval is later than beginning 
+                if len(dates_from_file) == 1:
+                    temp0 = date2num if date2num >= date2num_begin else date2num_begin 
+                    interval.append((temp0, date2num_end))
+                    break
+                else:
+                    if date2num <= date2num_end: 
+                        interval.append((date2num, date2num_end))
+                    break
+            # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
+            if date2num >= date2num_begin:
+                temp0 = date2num
+                # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
+                temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+            # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
             else:
-                if date2num <= date2num_end: 
-                    interval.append((date2num, date2num_end))
-                break
-        # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
-        if date2num >= date2num_begin:
-            temp0 = date2num
-            # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
-            temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
-        # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
-        else:
-            temp0 = date2num_begin
-            temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
-        interval.append((temp0,temp1))
-    return interval
+                temp0 = date2num_begin
+                temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+            interval.append((temp0,temp1))
+    else:   # lights out hour before noon
+        for i in range(len(dates_from_file)):
+            # start interval
+            date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
+            # end interval
+            date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=end_hour)))
+            if (i == len(dates_from_file) - 1) or i == 0:   # for the last interval or if it is the only one
+                # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
+                if date2num >= date2num_begin:
+                    temp0 = date2num
+                    # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
+                    temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+                # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
+                else:
+                    temp0 = date2num_begin
+                    temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+                interval.append((temp0,temp1))
 
+            else:   # if it is not the last or first interval
+                interval.append((date2num,date2num_next))
+        
+    return interval
 # returns daytime intervals based on nights 
 # it takes as arguments start and end time of a whole plot(data from: get_border_times(list_all))=earliesr, latest
 # and nighttime intervals(result of get_intervals)
