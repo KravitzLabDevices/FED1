@@ -1,5 +1,5 @@
 '''
-Author: Ilona Szczot
+Author: kravitzlab
 Date: July 15 2016
 Purpose: The application processes multiple files with timestamps(first column of a csv file) corresponding to the
 single pellet retrieved by a mouse. It extracts only common full 12 hours daytime and nighttime intervals, in order
@@ -12,15 +12,15 @@ with the results of analyzis and standard errors, and a statistical significance
 
 
 '''
-Requirements: Anaconda(Python2.7)
-(for Python 3.5 change imports(line 28,29) to tkinter and filedialog)
+Requirements: Anaconda(Python3.5)
 Tested on Windows7.
 '''
 
 import os, sys
 import fnmatch
-from Tkinter import *
-import tkFileDialog
+import tkinter
+from tkinter import *
+from tkinter import filedialog
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 import datetime as dt
@@ -88,7 +88,7 @@ except:
 
 # display folders through Tkinter, tkFileDialog
 # set the path to the folder according to users choice
-src = tkFileDialog.askdirectory()
+src = filedialog.askdirectory()
 
 ########################################## functions
 
@@ -361,13 +361,13 @@ common_days_nights = get_days_and_nights(common_data, full_nights_only, full_day
 ############################### print the analyzis in the console
 
 night_rate, night_error, night2ttest = get_nights_rate(common_days_nights, full_nights_only)
-print "Pellets per hour by night: ", night_rate, "err: ", night_error
+print ("Pellets per hour by night: ", night_rate, "err: ", night_error)
 day_rate, day_error, day2ttest = get_nights_rate(common_days_nights, full_days_only)
-print "Pellets per hour by night: ", day_rate,"err: ", day_error
+print ("Pellets per hour by night: ", day_rate,"err: ", day_error)
 
 # ttest
 ttest, p = ttest_ind(night2ttest, day2ttest)
-print "p = ", p
+print ("p = ", p)
 
 ############################################################## plot
 
