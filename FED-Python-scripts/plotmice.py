@@ -1,5 +1,5 @@
 '''
-Author: Ilona Szczot, based on matlab code by Katrina Nguyen
+Author: kravitzlab, based on matlab code by Katrina Nguyen
 Date: May 27 2016
 Purpose: to create an open source python code that plots Fig.2.(D) from 
 Nguyen et al. Journal of Neuroscience Methods 267 (2016) 108-114.
@@ -9,7 +9,7 @@ for different data.
 '''
 Description: The application reads the data from all csv files that
 appear in the given folder. It assumes the first column in the csv files
-are timestamps in the format: %m/%d/%Y %H:%M (this is how the file from 
+are timestamps in the format: %m/%d/%Y %H:%M:%S (this is how the file from 
 FED's SD card looks like). The folder selection, time bin size and nighttime hours
 can be chosen through the GUI. Based on the given data, the application will:
 Draw pellet retrieval events by individual mouse(upper plot). Separate row for each mouse.
@@ -21,17 +21,14 @@ Shade standard error for the plot.
 '''
 
 '''
-Requirements: Python 2.7, Matplotlib(http://matplotlib.org/users/installing.html)
-(for Python 3.5 change imports(line 33,34) to tkinter and filedialog)
+Requirements: Anaconda(Python3.5)
 Tested on Windows7.
-For MacOS: To be continued... For now there is a problem with the user interface.
-It works if the user replaces the src variable(line105) in this code with the path to the folder 
-containing csv files(src="path"), and comments out lines related to GUI.
 '''
 
 import os, sys
-from Tkinter import *
-import tkFileDialog
+import tkinter
+from tkinter import *
+from tkinter import filedialog
 import fnmatch
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
@@ -102,7 +99,7 @@ except:
 
 # display folders through Tkinter, tkFileDialog
 # set the path to the folder according to users choice
-src = tkFileDialog.askdirectory()
+src = filedialog.askdirectory()
     
 x_tick_hours = 0 # hour displayed on the X axis(24hours format)
 
@@ -197,40 +194,60 @@ def get_intervals(list_of_timestamps, start_hour, end_hour, earliest, latest):
     interval = list()
     date2num_begin = md.date2num(earliest)      # beginning of plot      
     date2num_end = md.date2num(latest)          # end of plot
-    # check how many dates(calendar days) are in the file
+    # check how many dates(calendar days) are in the fed
     for el in list_of_timestamps:
         if el.date() not in dates_from_file:
-            dates_from_file.append(el.date())
-            
-    # for each date in file create start_hour-end_hour pair of night interval (datetime, number format)
-    for i in range(len(dates_from_file)):
-        # start interval
-        date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
-        if (i+1) < len(dates_from_file):        # makes sure it is not the last inteval
-            # end interval
-            date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i+1], dt.time(hour=end_hour)))
-        else:       ## it means it is the last interval
-            # if there is only one day on the list check if the start interval is later than beginning 
-            if len(dates_from_file) == 1:
-                temp0 = date2num if date2num >= date2num_begin else date2num_begin 
-                interval.append((temp0, date2num_end))
-                break
+            dates_from_file.append(el.date())     
+    # for each date in fed, create start_hour-end_hour pair of night interval (datetime, number format)
+    if start_hour >= 12:
+        for i in range(len(dates_from_file)):
+            # start interval
+            date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
+            if (i+1) < len(dates_from_file):        # makes sure it is not the last inteval
+                # end interval
+                date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i+1], dt.time(hour=end_hour)))
+            else:       ## it means it is the last interval
+                # if there is only one day on the list check if the start interval is later than beginning 
+                if len(dates_from_file) == 1:
+                    temp0 = date2num if date2num >= date2num_begin else date2num_begin 
+                    interval.append((temp0, date2num_end))
+                    break
+                else:
+                    if date2num <= date2num_end: 
+                        interval.append((date2num, date2num_end))
+                    break
+            # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
+            if date2num >= date2num_begin:
+                temp0 = date2num
+                # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
+                temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+            # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
             else:
-                if date2num <= date2num_end: 
-                    interval.append((date2num, date2num_end))
-                break
-        # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
-        if date2num >= date2num_begin:
-            temp0 = date2num
-            # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
-            temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
-        # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
-        else:
-            temp0 = date2num_begin
-            temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
-        interval.append((temp0,temp1))
-    return interval
+                temp0 = date2num_begin
+                temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+            interval.append((temp0,temp1))
+    else:   # lights out hour before noon
+        for i in range(len(dates_from_file)):
+            # start interval
+            date2num = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=start_hour)))
+            # end interval
+            date2num_next = md.date2num(dt.datetime.combine(dates_from_file[i], dt.time(hour=end_hour)))
+            if (i == len(dates_from_file) - 1) or i == 0:   # for the last interval or if it is the only one
+                # if the start interval hour is later than first timestamp, set the beginning of interval to beginning of plot
+                if date2num >= date2num_begin:
+                    temp0 = date2num
+                    # if the next date is in the list, set it to the end of nighttime, if not set the end of plot to be the end of nighttime
+                    temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+                # if the start hour on that date  was earlier than the plot, set the first available to be the beginning of nighttime     
+                else:
+                    temp0 = date2num_begin
+                    temp1 = date2num_next if date2num_next <= date2num_end else date2num_end
+                interval.append((temp0,temp1))
 
+            else:   # if it is not the last or first interval
+                interval.append((date2num,date2num_next))
+        
+    return interval
 # function to find number of bins given 2 times and a desired time interval  
 # time difference is a timedelta type, it is first converted to seconds and divided by interval in seconds 
 def get_number_of_bins (latest, earliest, tinterval):
