@@ -11,7 +11,6 @@
 #include <avr/io.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_MotorShield.h>
-#include "utility/Adafruit_PWMServoDriver.h"
 
 #define FILENAME "PELLET_Cage12.csv"
 
