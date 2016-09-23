@@ -92,7 +92,7 @@ try:
     bin = int(variables[0])      
     lights_out = int(variables[1])     
     lights_on = int(variables[2])   
-    if bin < 60 or bin > 7200 or lights_out <= 0 or lights_out >= 24 or lights_on <= 0 or lights_on >= 24:
+    if bin < 60 or bin > 7200 or lights_out < 0 or lights_out >= 24 or lights_on < 0 or lights_on >= 24:
         popup_msg("Time bin has to be 60-7200sec\nHours in 24hour format")
 except:
     popup_msg("Wrong input")
@@ -116,13 +116,13 @@ def get_data(filename):
     my_cols = list()
     with open(filename) as csvfile:
         the_data = csv.reader(csvfile, delimiter=',')
-        try:
-            for line in the_data:           
-                my_cols.append(md.num2date(convertTime(line[0]), tz=None))
-        except:
-            popup_msg("First column of your file could not be converted from date: %m/%d/%Y %H:%M:%S")
-    # skip the first timestamp=irrelevant       
-    return my_cols[1:]
+        for line in the_data: 
+            try:
+                if int(line[1]) != 0:                     
+                    my_cols.append(md.num2date(convertTime(line[0]), tz=None))
+            except:
+                continue    
+    return my_cols
 
 # returns a list of lists
 # each list contains all timestamps from a single csv file from the folder (e.g. 8files=8lists within returned list)
@@ -134,7 +134,7 @@ def read_all(path):
         list_all = list()
         for file in directory:
             # search only those that are csv files
-            if fnmatch.fnmatch(file, '*.csv'):               
+            if fnmatch.fnmatch(file, '*.csv'):              
                 # get_data(filename) function will now read all of the timestamps from one fille
                 # and add it in the form of list to the list_all
                 list_all.append(get_data(os.path.join(path, file)))
@@ -143,6 +143,10 @@ def read_all(path):
     # check if any data was read
     if len(list_all) == 0:
         popup_msg("No file was read")
+    else:
+        for i in range(len(list_all)):
+            if len(list_all[i]) == 0:
+                popup_msg("Some files were not read")
     return list_all
 
 # returns the earliest common date and latest common date
@@ -298,8 +302,11 @@ def get_std_err(all_bin_lists):
     # calculate standard deviation and divide it by square root of total number of files
     # note: np.std calculates biased sample standard deviation estimator (divides by N), temp introduces Bessel's correction 
     # (divides by N-1) yielding unbiased stdev estimator (important for small samples size)
-    temp = math.sqrt(len(all_bin_lists))/math.sqrt(len(all_bin_lists)-1)
-    std_err = [float(np.std(interval_elements[i])*temp)/math.sqrt(len(all_bin_lists)) for i in range(len(all_bin_lists[0]))]
+    try:
+        temp = math.sqrt(len(all_bin_lists))/math.sqrt(len(all_bin_lists)-1)
+        std_err = [float(np.std(interval_elements[i])*temp)/math.sqrt(len(all_bin_lists)) for i in range(len(all_bin_lists[0]))]
+    except:
+        std_err = -1
     return std_err
     
 # make an array of times to plot(for Xaxis values)
@@ -323,8 +330,9 @@ avg = get_averages2plot(all_bin_counts, how_many_bins)  # get average number of 
 avg_times = times_intervals_for_avg(how_many_bins, start, bin)  # timeline for Xaxis to plot avg
 std_err = get_std_err(all_bin_counts)       # calculate standard error
 # get data to plot standard error around average plot
-positive_std_err_plot = [avg[i]+std_err[i] for i in range(len(std_err))]
-negative_std_err_plot = [avg[i]-std_err[i] for i in range(len(std_err))]
+if std_err != -1:
+    positive_std_err_plot = [avg[i]+std_err[i] for i in range(len(std_err))]
+    negative_std_err_plot = [avg[i]-std_err[i] for i in range(len(std_err))]
 
 ################################## ploting
 
@@ -361,9 +369,18 @@ ax2 = plt.subplot2grid((2,1),(1,0), sharex=ax1)
 plt.ylabel('Average pellet retrieval')
 # plot averages and standard error
 ax2.plot(avg_times, avg, color='k', linewidth=2.0)
-ax2.fill_between(avg_times, positive_std_err_plot, negative_std_err_plot, 
+if std_err != -1:
+    ax2.fill_between(avg_times, positive_std_err_plot, negative_std_err_plot, 
                     alpha=0.2, facecolor='gray', edgecolor="gray", linewidth=0.0, 
                     hatch='|||', label = 'Standard error') 
+else:
+    popup = Tk()
+    popup.wm_title("!")
+    label = Label(popup, text="Not enough data to calculate\nstandard error!\n\nPress 'ok' in Options window again\nto see the plot anyway.")
+    label.pack(side="top", fill="x", pady=10)
+    B1 = Button(popup, text="Ok", command = lambda: popup.withdraw())
+    B1.pack()
+    popup.mainloop()
 # shade night intervals
 for interval in nights:
     t0, t1 = interval
@@ -371,7 +388,8 @@ for interval in nights:
  
 # adjust positions between subplots
 plt.subplots_adjust(left=0.11, bottom=0.11, right=0.90, top=0.90, wspace=0, hspace=0)
-plt.legend() 
+if std_err != -1:
+    plt.legend() 
 plt.show()
 
 
