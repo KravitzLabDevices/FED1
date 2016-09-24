@@ -4,8 +4,7 @@ servo motor, IR beam detector, and SD card to provide feeding records of pellets
 
 Please see the wiki page for more information, including detailed build instructions: https://github.com/KravitzLab/fed/wiki/
 
-![FED complete assembly](https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg)
-<img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" width="48">
+<img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" width="100">
 
 FED-Python-scripts  contains analysis code written in Python
 
