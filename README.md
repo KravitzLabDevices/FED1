@@ -1,4 +1,4 @@
-# fed
+# FED
 Food Experimentation Device for precision feeding of mice. The system uses an Arduino processor, 
 servo motor, IR beam detector, and SD card to log pellets taken. FED runs off of a battery. 
 
