@@ -7,8 +7,12 @@ Please see the wiki page for more information, including detailed build instruct
 ![FED complete assembly](https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg)
 
 FED-Python-scripts  contains analysis code written in Python
+
 doc contains documentation and photos
+
 fed-arduion contains the latest Arduino sketch for running FED
+
 hardware contains a system schematic 
+
 The mechanical pieces can be found on TinkerCAD (https://www.tinkercad.com/users/69Zt0NRn4eA-katrina-nguyen)
 
