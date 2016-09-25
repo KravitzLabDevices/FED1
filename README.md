@@ -7,9 +7,10 @@ stepper motor, infrared beam detector, and SD card to provide feeding records of
 
 FED was designed by a team of researchers at the National Institutes of Health, more info here: http://www.kravitzlab.com/
 
-Please see the wiki for detailed build instructions: https://github.com/KravitzLab/fed/wiki/
-
 ## What's available?
++ <b> FED-wiki </b>
+If you'd like to build your own FED, check out the wiki for detailed instructions: https://github.com/KravitzLab/fed/wiki/
+
 + <b>FED-Python-scripts</b>  
 contains analysis code written in Python
 
