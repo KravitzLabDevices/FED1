@@ -2,10 +2,12 @@
 ## What is it?
 <img src="https://github.com/KravitzLab/FED/blob/master/hardware/FED%20Assembly.PNG" height="200">
 <img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" height="200">  
-Feeding Experimentation Device (FED) is a system for measuring feeding in mice. FED uses an Arduino processor, 
-stepper motor, IR beam detector, and SD card to provide feeding records of pellets eaten by singly housed rodents. FED runs off of a battery, which allows it to be placed in colony caging or within other experimental equipment.
+Feeding Experimentation Device (FED) is a free, open-source system for measuring feeding in mice. FED uses an Arduino processor, 
+stepper motor, infrared beam detector, and SD card to provide feeding records of pellets eaten by singly housed rodents. FED runs off of a battery, which allows it to be placed in colony caging or within other experimental equipment. The electronics for FED cost around $100, and the 3d printed parts cost between $20 and $300, depending on access to 3D printers and desired quality.
 
-Please see the wiki page for more information, including detailed build instructions: https://github.com/KravitzLab/fed/wiki/
+FED was designed by a team of researchers at the National Institutes of Health, more info here: http://www.kravitzlab.com/
+
+Please see the wiki for detailed build instructions: https://github.com/KravitzLab/fed/wiki/
 
 ## What's available?
 + <b>FED-Python-scripts</b>  
