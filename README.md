@@ -8,24 +8,24 @@ stepper motor, infrared beam detector, and SD card to provide feeding records of
 FED is open-source - we encourage you to fork, modify, and hack it to add new functionality. We'd also love to hear about it when you do, so please <a href="mailto:lex.kravitz@nih.gov">drop us a line</a>!
 
 ## What's available?
-+ <b> FED-wiki </b>
++ <b> FED-wiki </b>  
 If you'd like to build your own FED, head to the wiki for detailed build instructions: https://github.com/KravitzLab/fed/wiki/
 
 Other links above:
 + <b>FED-Python-scripts</b>  
-contains analysis code written in Python
+Contains analysis code written in Python
 
 + <b>doc</b>  
-contains documentation and photos
+Contains documentation and photos
 
 + <b>fed-arduino</b>  
-contains the latest Arduino sketch for running FED
+Contains the latest Arduino sketch for running FED
 
 + <b>hardware</b>  
-contains system schematic
+Contains system schematic
 
 + <b>3D design files</b>  
-all mechanical pieces can be found on TinkerCAD (https://www.tinkercad.com/users/69Zt0NRn4eA-katrina-nguyen) or Thingiverse (https://www.thingiverse.com/thing:1787971)  
+All mechanical pieces can be found on TinkerCAD (https://www.tinkercad.com/users/69Zt0NRn4eA-katrina-nguyen) or Thingiverse (https://www.thingiverse.com/thing:1787971)  
 **Note: please contact us if any other file formats are needed!
 
 FED was designed by a team of researchers at the National Institutes of Health, more info here: http://www.kravitzlab.com/
