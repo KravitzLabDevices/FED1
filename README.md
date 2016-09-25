@@ -1,4 +1,4 @@
-#FED
+# Feeding Experimentation Device (F.E.D.)
 ## What is it?
 <img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" width="250">  
 Food Experimentation Device (FED) is a system for measuring feeding in mice. FED uses an Arduino processor, 
@@ -7,19 +7,19 @@ servo motor, IR beam detector, and SD card to provide feeding records of pellets
 Please see the wiki page for more information, including detailed build instructions: https://github.com/KravitzLab/fed/wiki/
 
 ## What's available?
-+ FED-Python-scripts  
++ <b>FED-Python-scripts</b>  
 contains analysis code written in Python
 
-+ doc  
++ <b>doc</b>
 contains documentation and photos
 
-+ fed-arduino  
++ <b>fed-arduino</b>  
 contains the latest Arduino sketch for running FED
 
-+ hardware  
++ <b>hardware</b>  
 contains system schematic
 
-+ 3D design files
++ <b>3D design files</b>  
 all mechanical pieces can be found on TinkerCAD (https://www.tinkercad.com/users/69Zt0NRn4eA-katrina-nguyen) or Thingiverse (https://www.thingiverse.com/thing:1787971)  
 **Note: please contact us if any other file formats are needed!
 
