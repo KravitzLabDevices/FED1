@@ -11,6 +11,7 @@ FED was designed by a team of researchers at the National Institutes of Health, 
 + <b> FED-wiki </b>
 If you'd like to build your own FED, check out the wiki for detailed instructions: https://github.com/KravitzLab/fed/wiki/
 
+Other links above:
 + <b>FED-Python-scripts</b>  
 contains analysis code written in Python
 
