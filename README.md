@@ -13,16 +13,16 @@ If you'd like to build your own FED, head to the wiki for detailed build instruc
 
 Other links above:
 + <b>FED-Python-scripts</b>  
-Contains analysis code written in Python
+Analysis code written in Python
 
 + <b>doc</b>  
-Contains documentation and photos
+Documentation and photos
 
 + <b>fed-arduino</b>  
-Contains the latest Arduino sketch for running FED
+The latest Arduino sketch for running FED
 
 + <b>hardware</b>  
-Contains system schematic
+System schematic
 
 + <b>3D design files</b>  
 All mechanical pieces can be found on TinkerCAD (https://www.tinkercad.com/users/69Zt0NRn4eA-katrina-nguyen) or Thingiverse (https://www.thingiverse.com/thing:1787971)  
