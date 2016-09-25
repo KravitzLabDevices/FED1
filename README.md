@@ -1,6 +1,7 @@
 # Feeding Experimentation Device (F.E.D.)
 ## What is it?
-<img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" width="250">  
+<img src="https://github.com/KravitzLab/FED/blob/master/hardware/FED%20Assembly.PNG" height="200">
+<img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" height="200">  
 Food Experimentation Device (FED) is a system for measuring feeding in mice. FED uses an Arduino processor, 
 stepper motor, IR beam detector, and SD card to provide feeding records of pellets eaten by singly housed rodents. FED runs off of a battery, which allows it to be placed in colony caging or within other experimental equipment.
 
