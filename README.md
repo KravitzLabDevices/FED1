@@ -9,7 +9,7 @@ FED is open-source - we encourage you to fork, modify, and hack it to add new fu
 
 ## What's available?
 + <b> FED-wiki </b>
-If you'd like to build your own FED, check out the wiki for detailed instructions: https://github.com/KravitzLab/fed/wiki/
+If you'd like to build your own FED, head to the wiki for detailed instructions: https://github.com/KravitzLab/fed/wiki/
 
 Other links above:
 + <b>FED-Python-scripts</b>  
