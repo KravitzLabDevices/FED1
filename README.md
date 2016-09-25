@@ -10,7 +10,7 @@ Please see the wiki page for more information, including detailed build instruct
 + <b>FED-Python-scripts</b>  
 contains analysis code written in Python
 
-+ <b>doc</b>
++ <b>doc</b>  
 contains documentation and photos
 
 + <b>fed-arduino</b>  
