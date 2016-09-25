@@ -14,5 +14,5 @@ hardware contains a system schematic
 
 The mechanical pieces can be found on TinkerCAD (https://www.tinkercad.com/users/69Zt0NRn4eA-katrina-nguyen)
 
-<img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" width="250">
+<img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" width="500">
 
