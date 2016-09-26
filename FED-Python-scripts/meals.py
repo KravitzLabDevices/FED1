@@ -15,6 +15,9 @@ a meal. Each horizontal line is a meal, each vertical line is a timestamp.
 '''
 Requirements: Anaconda(Python3.5)
 Tested on Windows7.
+For MacOS: To be continued... For now there is a problem with the user interface.
+It works if the user replaces the src variable(line102) in this code with the path to the folder 
+containing csv files(src="path"), and comments out lines related to GUI.
 '''
 
 import os, sys
@@ -85,7 +88,7 @@ try:
 	meal_interval = int(variables[2])	
 	meal_size = float(variables[3])		
 	pellet_weight = float(variables[4])
-	if lights_out <= 0 or lights_out >= 24 or lights_on <= 0 or lights_on >= 24:
+	if lights_out < 0 or lights_out >= 24 or lights_on < 0 or lights_on >= 24:
 		popup_msg("Hours in 24hour format")
 	elif meal_interval < 60 or meal_interval > 7400 or meal_size < 0.1 or meal_size > 1 or pellet_weight < 0.01 or pellet_weight > 1:
 		popup_msg("Meal intervals between 60-7400sec\nMeal and pellets between 0.1-1g")
@@ -109,14 +112,14 @@ def get_data(filename):
     my_cols = list()
     with open(filename) as csvfile:
         the_data = csv.reader(csvfile, delimiter=',')
-        try:
-            for line in the_data:           
-                my_cols.append(md.num2date(convertTime(line[0]), tz=None))
-        except:
-            popup_msg("First column of your file could not be converted from date: %m/%d/%Y %H:%M:%S")
-    # skip the first timestamp=irrelevant       
-    return my_cols[1:]
-    
+        for line in the_data: 
+            try:
+                if int(line[1]) != 0:                     
+                    my_cols.append(md.num2date(convertTime(line[0]), tz=None))
+            except:
+                continue    
+    return my_cols
+
 # returns a list of lists
 # each list contains all timestamps from a single csv file from the folder (e.g. 8files=8lists within returned list)
 # it takes a path to the folder as an argument
@@ -127,7 +130,7 @@ def read_all(path):
         list_all = list()
         for file in directory:
             # search only those that are csv files
-            if fnmatch.fnmatch(file, '*.csv'):               
+            if fnmatch.fnmatch(file, '*.csv'):              
                 # get_data(filename) function will now read all of the timestamps from one fille
                 # and add it in the form of list to the list_all
                 list_all.append(get_data(os.path.join(path, file)))
@@ -135,7 +138,11 @@ def read_all(path):
         popup_msg("No file was read")
     # check if any data was read
     if len(list_all) == 0:
-        popup_msg("No data was read")
+        popup_msg("No file was read")
+    else:
+        for i in range(len(list_all)):
+            if len(list_all[i]) == 0:
+                popup_msg("Some files were not read")
     return list_all
 
 # returns the earliest common date and latest common date
