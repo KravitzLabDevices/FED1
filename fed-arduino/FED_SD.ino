@@ -49,7 +49,8 @@ int pelletCount = 0;
 
 // Stepper motor with shield test
 Adafruit_MotorShield gMotorShield = Adafruit_MotorShield();
-Adafruit_StepperMotor *gPtrToStepper = gMotorShield.getStepper(MOTOR_STEPS_PER_REVOLUTION,1);
+// Set the second argument to 1 to use M1 and M2 on the motor shield, or set as 2 to use M3 and M4:
+Adafruit_StepperMotor *gPtrToStepper = gMotorShield.getStepper(MOTOR_STEPS_PER_REVOLUTION,1); 
 
 int logData() {
   String year, month, day, hour, minute, second;
