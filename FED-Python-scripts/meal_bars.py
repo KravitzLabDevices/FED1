@@ -87,7 +87,7 @@ try:
 	meal_interval = int(variables[2])	
 	meal_size = float(variables[3])		
 	pellet_weight = float(variables[4])
-	if lights_out <= 0 or lights_out >= 24 or lights_on <= 0 or lights_on >= 24:
+	if lights_out < 0 or lights_out >= 24 or lights_on < 0 or lights_on >= 24:
 		popup_msg("Hours in 24hour format")
 	elif meal_interval < 60 or meal_interval > 7400 or meal_size < 0.1 or meal_size > 1 or pellet_weight < 0.01 or pellet_weight > 1:
 		popup_msg("Meal intervals between 60-7400sec\nMeal and pellets between 0.1-1g")
@@ -111,14 +111,14 @@ def get_data(filename):
     my_cols = list()
     with open(filename) as csvfile:
         the_data = csv.reader(csvfile, delimiter=',')
-        try:
-            for line in the_data:           
-                my_cols.append(md.num2date(convertTime(line[0]), tz=None))
-        except:
-            popup_msg("First column of your file could not be converted from date: %m/%d/%Y %H:%M:%S")
-    # skip the first timestamp=irrelevant       
-    return my_cols[1:]
-    
+        for line in the_data: 
+            try:
+                if int(line[1]) != 0:                     
+                    my_cols.append(md.num2date(convertTime(line[0]), tz=None))
+            except:
+                continue    
+    return my_cols
+
 # returns a list of lists
 # each list contains all timestamps from a single csv file from the folder (e.g. 8files=8lists within returned list)
 # it takes a path to the folder as an argument
@@ -129,7 +129,7 @@ def read_all(path):
         list_all = list()
         for file in directory:
             # search only those that are csv files
-            if fnmatch.fnmatch(file, '*.csv'):               
+            if fnmatch.fnmatch(file, '*.csv'):              
                 # get_data(filename) function will now read all of the timestamps from one fille
                 # and add it in the form of list to the list_all
                 list_all.append(get_data(os.path.join(path, file)))
@@ -137,7 +137,11 @@ def read_all(path):
         popup_msg("No file was read")
     # check if any data was read
     if len(list_all) == 0:
-        popup_msg("No data was read")
+        popup_msg("No file was read")
+    else:
+        for i in range(len(list_all)):
+            if len(list_all[i]) == 0:
+                popup_msg("Some files were not read")
     return list_all
 
 # returns the earliest common date and latest common date
@@ -484,8 +488,12 @@ def my_std_err(my_list):
     average = sum(my_list)/len(my_list)
     for i in range(len(my_list)):
         temp = temp + math.pow((my_list[i]-average), 2)
-    std_dev = math.sqrt(temp)/math.sqrt(len(my_list)-1)
-    std_err = std_dev/math.sqrt(len(my_list))
+    try:
+        std_dev = math.sqrt(temp)/math.sqrt(len(my_list)-1)
+        std_err = std_dev/math.sqrt(len(my_list))
+    except:
+        std_err = -1
+        
     return std_err
 
 ############################################### extracting data and calculations    
@@ -503,7 +511,8 @@ data2plot = get_days_and_nights(common_data, full_nights, full_days)
 
 meals, durations = get_by_meal_size(get_by_meal_interval(data2plot, meal_interval), meal_size, pellet_weight)
 
-############################### print the analyzis in the console
+############################### print the analysis in the console
+do_stats = True     # boolean to skip the stats if there was not enough information for std err
 # get data for night stats
 print
 print ("Night")
@@ -540,22 +549,33 @@ print ("%Pellets during night meals", prctg_day, "err", prctg_day_err)
 
 
 # ttest
-top_left_ttest, top_left_p = ttest_ind(night_meal_pelet_count2test, day_meal_pelet_count2test)
-print ("Pellets in meals p = ", top_left_p)
-top_right_ttest, top_right_p = ttest_ind(night_avg_meal_duration_p, day_avg_meal_duration_p)
-print ("Meal duration(min) p = ", top_right_p)
-# data to ttest for % pellets within meals
-night_meal2total2ttest = []
-for el in night_meal_pelet_count2test:
-    night_meal2total2ttest.append(el/float(total_night_pellets))
-day_meal2total2ttest = []
-for el in day_meal_pelet_count2test:
-    day_meal2total2ttest.append(el/float(total_day_pellets))
-bottom_left_ttest, bottom_left_p = ttest_ind(night_meal2total2ttest, day_meal2total2ttest)
-print ("Pellets during night meals(%) p = ", bottom_left_p)
-bottom_right_ttest, bottom_right_p = ttest_ind(mealNo_night2test, mealNo_day2test)
-print ("Meals per cycle p = ", bottom_right_p)
 
+# check if there was enough information to calculate the stats
+if mealNo_err_day ==-1 or mealNo_err_day ==0 or mealNo_err_night ==-1 or mealNo_err_night ==0 or duration_err_day ==-1 or duration_err_day ==0 or duration_err_night ==-1 or duration_err_night ==0 or meal_count_err_day ==-1 or meal_count_err_day ==0 or meal_count_err_night ==-1 or meal_count_err_night ==0:
+    do_stats = False
+    popup = Tk()
+    popup.wm_title("!")
+    label = Label(popup, text="Not enough data to calculate\nstandard error and significance!\n\nPress 'ok' in Options window again\nto see the plot anyway.")
+    label.pack(side="top", fill="x", pady=10)
+    B1 = Button(popup, text="Ok", command = lambda: popup.withdraw())
+    B1.pack()
+    popup.mainloop()
+else:
+    top_left_ttest, top_left_p = ttest_ind(night_meal_pelet_count2test, day_meal_pelet_count2test)
+    print ("Pellets in meals p = ", top_left_p)
+    top_right_ttest, top_right_p = ttest_ind(night_avg_meal_duration_p, day_avg_meal_duration_p)
+    print ("Meal duration(min) p = ", top_right_p)
+    # data to ttest for % pellets within meals
+    night_meal2total2ttest = []
+    for el in night_meal_pelet_count2test:
+        night_meal2total2ttest.append(el/float(total_night_pellets))
+    day_meal2total2ttest = []
+    for el in day_meal_pelet_count2test:
+        day_meal2total2ttest.append(el/float(total_day_pellets))
+    bottom_left_ttest, bottom_left_p = ttest_ind(night_meal2total2ttest, day_meal2total2ttest)
+    print ("Pellets during night meals(%) p = ", bottom_left_p)
+    bottom_right_ttest, bottom_right_p = ttest_ind(mealNo_night2test, mealNo_day2test)
+    print ("Meals per cycle p = ", bottom_right_p)
 
 ############################################################# plot
 
@@ -568,109 +588,120 @@ ax1 = plt.subplot2grid((2,2),(0,0))
 plt.ylabel('Pellets in meals')
 ax1.set_frame_on(False)
 y = [night_meal_pellet_count, day_meal_pellet_count]
-# yerr first in tuple is to first colunm second to second, 
-# first tuple is for positive values, second for negative
-# drk, lght = plt.bar(x, y, width = 0.7, yerr=[(10,2),(10,2)])
-drk, lght = plt.bar(x, y, width = 0.7, yerr=[(meal_count_err_night,meal_count_err_day),(meal_count_err_night,meal_count_err_day)], ecolor='k')
+if do_stats == True:
+    # yerr first in tuple is to first colunm second to second, 
+    # first tuple is for positive values, second for negative
+    # drk, lght = plt.bar(x, y, width = 0.7, yerr=[(10,2),(10,2)])
+    drk, lght = plt.bar(x, y, width = 0.7, yerr=[(meal_count_err_night,meal_count_err_day),(meal_count_err_night,meal_count_err_day)], ecolor='k')
+else:
+    drk, lght = plt.bar(x, y, width = 0.7)
 centers = x + 0.5*drk.get_width()     # align labels in the center
 ax1.set_xticks(centers)
 drk.set_facecolor('0.85')   # shade of gray
 lght.set_facecolor('w')
 ax1.set_xticklabels(['Dark', 'Light'])
 
-# check p < 0.01(**), p < 0.05(*)
-if top_left_p < 0.05:
-    text = '*' if top_left_p >= 0.01 else '**'
-    a = (centers[0] + centers[1])/2
-    b = 1.05*max(y[0],y[1])
-    dx = abs(centers[0]-centers[1])
-    props = {'connectionstyle':'bar','arrowstyle':'-',\
-                 'shrinkA':20,'shrinkB':20,'lw':1}
-    # position the text in the middle on the top of the bar
-    ax1.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
-    ax1.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
-    plt.ylim(ymax=b+(0.6*b))
-
+if do_stats == True:
+    # check p < 0.01(**), p < 0.05(*)
+    if top_left_p < 0.05:
+        text = '*' if top_left_p >= 0.01 else '**'
+        a = (centers[0] + centers[1])/2
+        b = 1.05*max(y[0],y[1])
+        dx = abs(centers[0]-centers[1])
+        props = {'connectionstyle':'bar','arrowstyle':'-',\
+                     'shrinkA':20,'shrinkB':20,'lw':1}
+        # position the text in the middle on the top of the bar
+        ax1.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
+        ax1.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
+        plt.ylim(ymax=b+(0.6*b))
 
 ############### second subplot(top right), "Meal duration(min)"
 ax2 = plt.subplot2grid((2,2),(0,1))
 plt.ylabel('Meal duration(min)')
 ax2.set_frame_on(False)
 y = [night_avg_meal_duration, day_avg_meal_duration]
-drk, lght = plt.bar(x, y, width = 0.7, yerr=[(duration_err_night,duration_err_day),(duration_err_night,duration_err_day)], ecolor='k')
-centers = x + 0.5*drk.get_width()     # align labels in the center
+if do_stats == True:
+    drk, lght = plt.bar(x, y, width = 0.7, yerr=[(duration_err_night,duration_err_day),(duration_err_night,duration_err_day)], ecolor='k')
+else:
+    drk, lght = plt.bar(x, y, width = 0.7)
 ax2.set_xticks(centers)
 drk.set_facecolor('0.85')   # shade of gray
 lght.set_facecolor('w')
 ax2.set_xticklabels(['Dark', 'Light'])
 
-# check p < 0.01(**), p < 0.05(*)
-if top_right_p < 0.05:
-    text = '*' if top_right_p >= 0.01 else '**'
-    a = (centers[0] + centers[1])/2
-    b = 1.1*max(y[0],y[1])
-    dx = abs(centers[0]-centers[1])
-    props = {'connectionstyle':'bar','arrowstyle':'-',\
-                 'shrinkA':20,'shrinkB':20,'lw':1}
-    # position the text in the middle on the top of the bar
-    ax2.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
-    ax2.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
-    plt.ylim(ymax=b+(0.6*b))
-
+if do_stats == True:
+    # check p < 0.01(**), p < 0.05(*)
+    if top_right_p < 0.05:
+        text = '*' if top_right_p >= 0.01 else '**'
+        a = (centers[0] + centers[1])/2
+        b = 1.1*max(y[0],y[1])
+        dx = abs(centers[0]-centers[1])
+        props = {'connectionstyle':'bar','arrowstyle':'-',\
+                     'shrinkA':20,'shrinkB':20,'lw':1}
+        # position the text in the middle on the top of the bar
+        ax2.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
+        ax2.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
+        plt.ylim(ymax=b+(0.6*b))
 
 ############ third subplot(bottom left), "Pellets eaten during meals(%)"
 ax3 = plt.subplot2grid((2,2),(1,0))
 plt.ylabel('Pellets eaten during meals(%)')
 ax3.set_frame_on(False)
 y = [prctg_night, prctg_day]
-drk, lght = plt.bar(x, y, width = 0.7, yerr=[(prctg_night_err,prctg_day_err),(prctg_night_err,prctg_day_err)], ecolor='k')
+if do_stats == True:
+    drk, lght = plt.bar(x, y, width = 0.7, yerr=[(prctg_night_err,prctg_day_err),(prctg_night_err,prctg_day_err)], ecolor='k')
+else:
+    drk, lght = plt.bar(x, y, width = 0.7)
 centers = x + 0.5*drk.get_width()     # align labels in the center
 ax3.set_xticks(centers)
 drk.set_facecolor('0.85')   # shade of gray
 lght.set_facecolor('w')
 ax3.set_xticklabels(['Dark', 'Light'])
 
-# check p < 0.01(**), p < 0.05(*)
-if bottom_left_p < 0.05:
-    text = '*' if bottom_left_p >= 0.01 else '**'
-    a = (centers[0] + centers[1])/2
-    b = 1.1*max(y[0],y[1])
-    dx = abs(centers[0]-centers[1])
-    props = {'connectionstyle':'bar','arrowstyle':'-',\
-                 'shrinkA':20,'shrinkB':20,'lw':1}
-    # position the text in the middle on the top of the bar
-    ax3.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
-    ax3.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
-    plt.ylim(ymax=b+(0.6*b))
-
+if do_stats == True:
+    # check p < 0.01(**), p < 0.05(*)
+    if bottom_left_p < 0.05:
+        text = '*' if bottom_left_p >= 0.01 else '**'
+        a = (centers[0] + centers[1])/2
+        b = 1.1*max(y[0],y[1])
+        dx = abs(centers[0]-centers[1])
+        props = {'connectionstyle':'bar','arrowstyle':'-',\
+                     'shrinkA':20,'shrinkB':20,'lw':1}
+        # position the text in the middle on the top of the bar
+        ax3.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
+        ax3.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
+        plt.ylim(ymax=b+(0.6*b))
 
 ############ fourth subplot(bottom right), "Meals per cycle"
 ax4 = plt.subplot2grid((2,2),(1,1))
 plt.ylabel('Meals per cycle')
 ax4.set_frame_on(False)
 y = [mealNo_night, mealNo_day]
-drk, lght = plt.bar(x, y, width = 0.7, yerr=[(mealNo_err_night,mealNo_err_day),(mealNo_err_night,mealNo_err_day)], ecolor='k')
+if do_stats == True:
+    drk, lght = plt.bar(x, y, width = 0.7, yerr=[(mealNo_err_night,mealNo_err_day),(mealNo_err_night,mealNo_err_day)], ecolor='k')
+else:
+    drk, lght = plt.bar(x, y, width = 0.7)
 centers = x + 0.5*drk.get_width()     # align labels in the center
 ax4.set_xticks(centers)
 drk.set_facecolor('0.85')   # shade of gray
 lght.set_facecolor('w')
 ax4.set_xticklabels(['Dark', 'Light'])
 
-# check p < 0.01(**), p < 0.05(*)
-if bottom_right_p < 0.05:
-    text = '*' if bottom_right_p >= 0.01 else '**'
-    a = (centers[0] + centers[1])/2
-    b = 1.1*max(y[0],y[1])
-    dx = abs(centers[0]-centers[1])
-    props = {'connectionstyle':'bar','arrowstyle':'-',\
-                 'shrinkA':20,'shrinkB':20,'lw':1}
-    # position the text in the middle on the top of the bar
-    ax4.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
-    ax4.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
-    plt.ylim(ymax=b+(0.6*b))
+if do_stats == True:
+    # check p < 0.01(**), p < 0.05(*)
+    if bottom_right_p < 0.05:
+        text = '*' if bottom_right_p >= 0.01 else '**'
+        a = (centers[0] + centers[1])/2
+        b = 1.1*max(y[0],y[1])
+        dx = abs(centers[0]-centers[1])
+        props = {'connectionstyle':'bar','arrowstyle':'-',\
+                     'shrinkA':20,'shrinkB':20,'lw':1}
+        # position the text in the middle on the top of the bar
+        ax4.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
+        ax4.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
+        plt.ylim(ymax=b+(0.6*b))
 
 # adjust positions between subplots
 plt.subplots_adjust(left=0.11, bottom=0.11, right=0.90, top=0.90, wspace=0.3, hspace=0.3)
 
 plt.show()
-
