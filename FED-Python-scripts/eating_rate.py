@@ -81,7 +81,7 @@ try:
     bin = int(variables[0])      
     lights_out = int(variables[1])     
     lights_on = int(variables[2])   
-    if bin < 60 or bin > 7200 or lights_out <= 0 or lights_out >= 24 or lights_on <= 0 or lights_on >= 24:
+    if bin < 60 or bin > 7200 or lights_out < 0 or lights_out >= 24 or lights_on < 0 or lights_on >= 24:
         popup_msg("Time bin has to be 60-7200sec\nHours in 24hour format")
 except:
     popup_msg("Wrong input")
@@ -103,14 +103,14 @@ def get_data(filename):
     my_cols = list()
     with open(filename) as csvfile:
         the_data = csv.reader(csvfile, delimiter=',')
-        try:
-            for line in the_data:           
-                my_cols.append(md.num2date(convertTime(line[0]), tz=None))
-        except:
-            popup_msg("First column of your file could not be converted from date: %m/%d/%Y %H:%M:%S")
-    # skip the first timestamp=irrelevant       
-    return my_cols[1:]
-    
+        for line in the_data: 
+            try:
+                if int(line[1]) != 0:                     
+                    my_cols.append(md.num2date(convertTime(line[0]), tz=None))
+            except:
+                continue    
+    return my_cols
+
 # returns a list of lists
 # each list contains all timestamps from a single csv file from the folder (e.g. 8files=8lists within returned list)
 # it takes a path to the folder as an argument
@@ -121,7 +121,7 @@ def read_all(path):
         list_all = list()
         for file in directory:
             # search only those that are csv files
-            if fnmatch.fnmatch(file, '*.csv'):               
+            if fnmatch.fnmatch(file, '*.csv'):              
                 # get_data(filename) function will now read all of the timestamps from one fille
                 # and add it in the form of list to the list_all
                 list_all.append(get_data(os.path.join(path, file)))
@@ -129,7 +129,11 @@ def read_all(path):
         popup_msg("No file was read")
     # check if any data was read
     if len(list_all) == 0:
-        popup_msg("No data was read")
+        popup_msg("No file was read")
+    else:
+        for i in range(len(list_all)):
+            if len(list_all[i]) == 0:
+                popup_msg("Some files were not read")
     return list_all
 
 # returns the earliest common date and latest common date
@@ -341,8 +345,11 @@ def my_std_err(my_list):
     average = sum(my_list)/len(my_list)
     for i in range(len(my_list)):
         temp = temp + math.pow((my_list[i]-average), 2)
-    std_dev = math.sqrt(temp)/math.sqrt(len(my_list)-1)
-    std_err = std_dev/math.sqrt(len(my_list))
+    try:
+        std_dev = math.sqrt(temp)/math.sqrt(len(my_list)-1)
+        std_err = std_dev/math.sqrt(len(my_list))
+    except:
+        std_err = -1
     return std_err
 
 ############################################### extracting data and calculations    
@@ -359,15 +366,26 @@ full_days_only = get_12h_intervals(days)        # list of tuples of start and en
 common_days_nights = get_days_and_nights(common_data, full_nights_only, full_days_only) # equal number of days and nights
 
 ############################### print the analyzis in the console
-
+do_stats = True     # boolean to skip the stats if there was not enough information
 night_rate, night_error, night2ttest = get_nights_rate(common_days_nights, full_nights_only)
 print ("Pellets per hour by night: ", night_rate, "err: ", night_error)
 day_rate, day_error, day2ttest = get_nights_rate(common_days_nights, full_days_only)
 print ("Pellets per hour by night: ", day_rate,"err: ", day_error)
 
 # ttest
-ttest, p = ttest_ind(night2ttest, day2ttest)
-print ("p = ", p)
+# check if there was enough information to calculate the stats
+if night_error == -1 or night_error == 0 or day_error == -1 or day_error == 0:
+    do_stats = False
+    popup = Tk()
+    popup.wm_title("!")
+    label = Label(popup, text="Not enough data to calculate\nstandard error and significance!\n\nPress 'ok' in Options window again\nto see the plot anyway.")
+    label.pack(side="top", fill="x", pady=10)
+    B1 = Button(popup, text="Ok", command = lambda: popup.withdraw())
+    B1.pack()
+    popup.mainloop()
+else:
+    ttest, p = ttest_ind(night2ttest, day2ttest)
+    print ("p = ", p)
 
 ############################################################## plot
 
@@ -379,27 +397,31 @@ ax1 = plt.subplot2grid((1,1),(0,0))
 plt.ylabel('Eating rate (pellets/hour)')
 ax1.set_frame_on(False)
 y = [night_rate, day_rate]
-# yerr first in tuple is to first colunm second to second, 
-# first tuple is for positive values, second for negative
-# drk, lght = plt.bar(x, y, width = 0.7, yerr=[(10,2),(10,2)])
-drk, lght = plt.bar(x, y, width = 0.7, yerr=[(night_error,day_error),(night_error,day_error)], ecolor='k')
+if do_stats == True:
+    # yerr first in tuple is to first colunm second to second, 
+    # first tuple is for positive values, second for negative
+    # drk, lght = plt.bar(x, y, width = 0.7, yerr=[(10,2),(10,2)])
+    drk, lght = plt.bar(x, y, width = 0.7, yerr=[(night_error,day_error),(night_error,day_error)], ecolor='k')
+else:
+    drk, lght = plt.bar(x, y, width = 0.7)
 centers = x + 0.5*drk.get_width()     # align labels in the center
 ax1.set_xticks(centers)
 drk.set_facecolor('0.85')   # shade of gray
 lght.set_facecolor('w')
 ax1.set_xticklabels(['Dark', 'Light'])
 
-# check p < 0.01(**), p < 0.05(*)
-if p < 0.05:
-    text = '*' if p >= 0.01 else '**'
-    a = (centers[0] + centers[1])/2
-    b = 1.05*max(y[0],y[1])
-    dx = abs(centers[0]-centers[1])
-    props = {'connectionstyle':'bar','arrowstyle':'-',\
-                 'shrinkA':20,'shrinkB':20,'lw':1}
-    # position the text in the middle on the top of the bar
-    ax1.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
-    ax1.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
-    plt.ylim(ymax=b+(0.6*b))
+if do_stats == True:
+    # check p < 0.01(**), p < 0.05(*)
+    if p < 0.05:
+        text = '*' if p >= 0.01 else '**'
+        a = (centers[0] + centers[1])/2
+        b = 1.05*max(y[0],y[1])
+        dx = abs(centers[0]-centers[1])
+        props = {'connectionstyle':'bar','arrowstyle':'-',\
+                     'shrinkA':20,'shrinkB':20,'lw':1}
+        # position the text in the middle on the top of the bar
+        ax1.annotate(text, xy=(centers[0]+(dx/2.2),1.5*b), zorder=10)
+        ax1.annotate('', xy=(centers[0],b), xytext=(centers[1],b), arrowprops=props)
+        plt.ylim(ymax=b+(0.6*b))
 
 plt.show()
