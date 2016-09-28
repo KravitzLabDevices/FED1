@@ -13,7 +13,7 @@ to open interactive Python development environment, to access the source code.
 
 All scripts accept csv files, where the first coulmn is a timestamp: %m/%d/%Y %H:%M:%S,
 and second column is "Pellet Count". 
-It is not necessary to remove headers in the FED's raw file, but it might be necessary to change
+It is not necessary to remove headers from the FED's raw file, but it might be necessary to change
 the first column's cell format in excel to "Custom", and save it as "Type": m/d/yyyy h:mm:ss,
 before running the scripts.
 
