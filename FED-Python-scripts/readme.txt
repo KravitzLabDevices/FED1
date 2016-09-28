@@ -11,7 +11,7 @@ or in the cmd type: python <fileName.py>
 or in the command line type: spyder 
 to open interactive Python development environment, to access the source code.
 
-All scripts accept csv files, where first coulmn is a timestamp: %m/%d/%Y %H:%M:%S,
+All scripts accept csv files, where the first coulmn is a timestamp: %m/%d/%Y %H:%M:%S,
 and second column is "Pellet Count". 
 It is not necessary to remove headers in the FED's raw file, but it might be necessary to change
 the first column's cell format in excel to "Custom", and save it as "Type": m/d/yyyy h:mm:ss,
