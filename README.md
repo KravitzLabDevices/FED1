@@ -13,6 +13,10 @@ FED is open-source - we encourage you to fork, modify, and hack it to add new fu
 If you'd like to build your own FED, head to the wiki for detailed build instructions: https://github.com/KravitzLab/fed/wiki/
 
 Other links above:
+
++ <b>3D_Printing_Files</b>  
+STL files for 3D printing
+
 + <b>FED-Python-scripts</b>  
 Analysis code written in Python
 
