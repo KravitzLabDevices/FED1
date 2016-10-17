@@ -16,6 +16,7 @@ Other links above:
 
 + <b>3D_Printing_Files</b>  
 STL files for 3D printing
+**Please contact us if any other file formats are needed!
 
 + <b>FED-Python-scripts</b>  
 Analysis code written in Python
@@ -28,10 +29,6 @@ The latest Arduino sketch for running FED
 
 + <b>hardware</b>  
 System schematic
-
-+ <b>3D design files</b>  
-All mechanical pieces can be found on TinkerCAD (https://www.tinkercad.com/users/69Zt0NRn4eA-katrina-nguyen) or Thingiverse (https://www.thingiverse.com/thing:1787971)  
-**Note: please contact us if any other file formats are needed!
 
 FED was designed by a team of researchers at the National Institutes of Health, more info here: http://www.kravitzlab.com/
 
