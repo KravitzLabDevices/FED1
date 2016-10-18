@@ -15,8 +15,8 @@ If you'd like to build your own FED, head to the wiki for detailed build instruc
 Other links above:
 
 + <b>3D_Printing_Files</b>  
-STL files for 3D printing
-**Please contact us if any other file formats are needed!
+STL files for 3D printing 
+(please contact us if any other file formats are needed)
 
 + <b>FED-Python-scripts</b>  
 Analysis code written in Python
