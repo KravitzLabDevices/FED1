@@ -1,1 +1,1 @@
-https://github.com/KravitzLab/FED/blob/master/hardware/FED%20Assembly.PNG
+<img src="https://github.com/KravitzLab/FED/blob/master/hardware/FED%20Assembly.PNG" height="400">
