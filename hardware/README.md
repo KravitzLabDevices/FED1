@@ -1,1 +1,1 @@
-Note that the FED schematics do not currently show the motor shield that is being used by the software.
+https://github.com/KravitzLab/FED/blob/master/hardware/FED%20Assembly.PNG
