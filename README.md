@@ -26,6 +26,7 @@ Documentation and photos
 
 + <b>fed-arduino</b>  
 The latest Arduino sketch for running FED
+<b> Please check out our third release for libraries/arduino code tailored to the Adafruit SD shield-Version B.
 
 + <b>hardware</b>  
 System schematic
