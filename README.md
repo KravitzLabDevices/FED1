@@ -25,8 +25,7 @@ Analysis code written in Python
 Documentation and photos
 
 + <b>fed-arduino</b>  
-The latest Arduino sketch for running FED.
-<b> Please check our third release for libraries/arduino code tailored to the Adafruit SD shield-Version B.</b> 
+The latest Arduino sketch for running FED. We've recently added a new version to the Arduino code (FED_SD_VersionB) to account for Adafruit's newely released SD shield. In order to find out whether you have SD shield version A or B, please go to the following URL: https://learn.adafruit.com/adafruit-data-logger-shield/wiring-and-config
 
 + <b>hardware</b>  
 System schematic
