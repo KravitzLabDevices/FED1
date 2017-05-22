@@ -24,8 +24,10 @@ Analysis code written in Python
 + <b>doc</b>  
 Documentation and photos
 
-+ <b>fed-arduino</b>  
-The latest Arduino sketch for running FED. We've recently added a new version to the Arduino code (FED_SD_VersionB) to account for Adafruit's newely released SD shield. In order to find out whether you have SD shield version A or B, please go to the following URL: https://learn.adafruit.com/adafruit-data-logger-shield/wiring-and-config
++ <b>FED-arduino</b>  
+The latest Arduino sketch for running FED. We've recently added a new version to the Arduino code (FED_SD_VersionB) to account for Adafruit's newely released SD shield. In order to find out whether you have SD shield version A or B, please go to the following URL: https://learn.adafruit.com/adafruit-data-logger-shield/wiring-and-config 
+
+Note: once coin battery is inserted in to SD shield, please don't remove it! This prevents Real Time Clock (RTC) errors.
 
 + <b>hardware</b>  
 System schematic
