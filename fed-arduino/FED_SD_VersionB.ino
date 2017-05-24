@@ -21,7 +21,7 @@ int PIState = 1;
 int PIState2;
 int lastState = 1;
 int pelletCount = 0;
-const int TTL_DEBUG_PIN = 5; // This initiatlizes the pin on the Arduino that the BNC output is connected to
+const int TTL_DEBUG_PIN = 3; // This initiatlizes the pin on the Arduino that the BNC output is connected to
 SdFat SD; // defining an object SD
 const int CS_pin = 10;  // This initializes the SD card on pin 10
 RTC_PCF8523 RTC;    // refer to the real-time clock on the SD shield (Version B)
