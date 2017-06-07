@@ -58,6 +58,7 @@ int logData(){
 
   // concatenates the strings defined above into date and time
   time = month + "/" + day + " " + hour + ":" + minute + ":" + second;
+  Serial.println(time);
 
   // opens a file on the SD card and prints a new line with the
   // current reinforcement schedule, the time stamp,
