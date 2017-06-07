@@ -77,9 +77,6 @@ void setup(){
   
   // Set stepper rpm, 255 max for this 5V stepper
   gPtrToStepper->setSpeed(255); 
-
-  // RTC.adjust(DateTime(F(__DATE__), F(__TIME__))); // Uncomment this line if you unplug RTC coin battery after your first
-  // initialization, it will update the time to your OS time.
   
   // Check if RTC is working correctly
   if (! RTC.initialized()) {
@@ -187,6 +184,7 @@ int logData(){
 
   // concatenates the strings defined above into date and time
   time = month + "/" + day + " " + hour + ":" + minute + ":" + second;
+  Serial.println(time);
 
   dataFile = SD.open(FILENAME, FILE_WRITE);
   if (dataFile) {
