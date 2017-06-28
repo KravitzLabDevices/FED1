@@ -2,7 +2,7 @@
 #include <avr/sleep.h>
 #include <avr/power.h>
 #include <avr/wdt.h>
-#include <SdFat.h>               
+#include <SdFat.h>
 #include "RTClib.h"
 #include <Wire.h>
 #include <SPI.h>
@@ -36,31 +36,32 @@ const long hour2 = 3600000; // 3600000 milliseconds in an hour
 const long minute2 = 60000; // 60000 milliseconds in a minute
 const long second2 =  1000; // 1000 milliseconds in a second
 
-// Setting up the stepper motor 
+// Setting up the stepper motor
 const int STEPS_TO_INCREMENT = 64;
 const int MOTOR_STEPS_PER_REVOLUTION = 513;
 Adafruit_MotorShield gMotorShield = Adafruit_MotorShield();
 // Set the second argument to 1 to use M1 and M2 on the motor shield, or set as 2 to use M3 and M4:
-Adafruit_StepperMotor *gPtrToStepper = gMotorShield.getStepper(MOTOR_STEPS_PER_REVOLUTION,1); 
+Adafruit_StepperMotor *gPtrToStepper = gMotorShield.getStepper(MOTOR_STEPS_PER_REVOLUTION, 1);
 
+String year, month, day, hour, minute, second;
+int counter = 1;
+int max_counter = 10;
 
-
-
-void setup(){
+void setup() {
 
   // make all unused pins inputs with pullups enabled by default, lowest power drain
   // leave pins 0 & 1 (Arduino RX and TX) as they are
-  for (byte i=4; i <= 20; i++) {    
-    pinMode(i, INPUT_PULLUP);     
+  for (byte i = 4; i <= 20; i++) {
+    pinMode(i, INPUT_PULLUP);
   }
-  
+
   // this saves power by disabling ADC as we won't be using it
-  ADCSRA = 0;  
+  ADCSRA = 0;
   power_adc_disable(); // ADC converter
   power_timer1_disable();// Timer 1
   power_timer2_disable();// Timer 2
 
-  // This starts serial monitoring - With FED connected, open the Serial Monitor in the 
+  // This starts serial monitoring - With FED connected, open the Serial Monitor in the
   // Arduino IDE to watch FED output in real-time for debugging
   Serial.begin(9600);
   //Serial.println(F("Starting up..."));
@@ -74,10 +75,10 @@ void setup(){
   Wire.begin();
   RTC.begin(); // RTC library needs Wire
   gMotorShield.begin(); // use default I2C address of 0x40
-  
+
   // Set stepper rpm, 255 max for this 5V stepper
-  gPtrToStepper->setSpeed(255); 
-  
+  gPtrToStepper->setSpeed(255);
+
   // Check if RTC is working correctly
   if (! RTC.initialized()) {
     Serial.println(F("RTC is NOT running!"));
@@ -87,7 +88,7 @@ void setup(){
     // January 21, 2014 at 3am you would call:
     //RTC.adjust(DateTime(2016, 12, 20, 3, 1, 8));
   }
-  
+
   // This checks if a valid SD card is installed in FED.  If it can't find a valid card it will stop the code.
   if (!SD.begin(CS_pin)) {
     Serial.println(F("Card failed, or not present"));
@@ -95,7 +96,7 @@ void setup(){
   }
   Serial.println(F("Card initialized."));
 
-  // Open the CSV file - if there is a problem the code will stop here. 
+  // Open the CSV file - if there is a problem the code will stop here.
   dataFile = SD.open(FILENAME, FILE_WRITE);
   if (! dataFile) {
     Serial.println(F("Error opening datalog.txt"));
@@ -105,82 +106,97 @@ void setup(){
     dataFile.print(time);
     dataFile.println(F("Time,Pellet Count,Pellet Drop Delay"));
     dataFile.close();
-  }    
+  }
   delay (50);  // delay helps give the card a bit more time
   lastState = 0;
 }
 
 
-
-
 //The following is the main loop of the FED code
-void loop(){
+void loop() {
   // Read the photo interrupter pin to see if the pellet has been removed
   PIState = digitalRead(PHOTO_INTERRUPTER_PIN);
-  
-  // These are debugging lines for serial monitoring
-  //Serial.print("Photointerrupter State: ");
-  //Serial.println(PIState);
-  digitalWrite(TTL_DEBUG_PIN, LOW);
 
-  // The following checks if the pellet has been removed, and if it has it dispenses another pellet.  
-  // The code contains protection against dispensing double pellets
-  if (PIState == 1 && PIState != lastState) {  
-    digitalWrite(TTL_DEBUG_PIN, HIGH);    
-    startTime = millis();
-    //Serial.print(F("Time Elapsed Check: "));Serial.println(timeElapsed);
-    timecounter(timeElapsed);
-    pelletCount ++;
-    logData();
-    lastState = PIState;
-  }
-  else if (PIState == 1) {   
-    //Serial.println(F("Turning motor..."));
+
+  // These are debugging lines for serial monitoring
+  Serial.print("Photointerrupter State: "); Serial.println(PIState);
+
+  // The following checks if the pellet has been removed, and if it has it dispenses another pellet.
+  if (PIState == 1 && PIState != lastState) {
+    digitalWrite(TTL_DEBUG_PIN, HIGH);
+    delay (500);
+    digitalWrite(TTL_DEBUG_PIN, LOW);
+
     power_twi_enable();
-    gPtrToStepper->step(STEPS_TO_INCREMENT/3,BACKWARD,DOUBLE);
+    power_spi_enable();
+    DateTime datetime = RTC.now();
+    minute = String(datetime.minute() , DEC);
+    second = String(datetime.second(), DEC);
+
+    while ( counter <= max_counter) {
+      delay(1000);
+      PIState = digitalRead(PHOTO_INTERRUPTER_PIN);
+      if (PIState == 0) {
+        lastState = PIState; // lastState becomes LOW
+        break;
+      }
+      else if (counter == max_counter) {
+        startTime = millis();
+        timecounter(timeElapsed);
+        pelletCount ++;
+        logData();
+        lastState = PIState; // lastState becomes HIGH
+      }
+      counter++;
+    }
+    counter = 0;
+  }
+
+
+  else if (PIState == 1) {
+    power_twi_enable();
+    gPtrToStepper->step(STEPS_TO_INCREMENT / 3, BACKWARD, DOUBLE);
     delay (500);
     PIState2 = digitalRead(PHOTO_INTERRUPTER_PIN);
     delay(500);
-    if (PIState2 == 1) {gPtrToStepper->step(STEPS_TO_INCREMENT, FORWARD, DOUBLE);}
+    if (PIState2 == 1) {
+      gPtrToStepper->step(STEPS_TO_INCREMENT, FORWARD, DOUBLE);
+    }
     gPtrToStepper->release();
     power_twi_disable();
     lastState = PIState;
   }
-  
+
+
   else if (PIState == 0 && (PIState != lastState)) {
-    //Serial.print(F("Time Elapsed Since Last Pellet: "));
-    timeElapsed = millis() - startTime;                
-    //Serial.println(timeElapsed);
-    lastState = PIState;
+    timeElapsed = millis() - startTime;
+    lastState = PIState; // lastState becomes LOW
   }
 
-  
+
   else {
     lastState = PIState;
     Serial.println("Entering sleep");
     delay (100);
     enterSleep();
   }
-  
   delay(500);
+
 }
 
 
 
 
 // This creates the function "logData" that is used in the code
-int logData(){
-  String year, month, day, hour, minute, second;
-  power_twi_enable();
-  power_spi_enable();
+int logData() {
 
   DateTime datetime = RTC.now();
   year = String(datetime.year(), DEC);
   month = String(datetime.month(), DEC);
   day  = String(datetime.day(),  DEC);
   hour  = String(datetime.hour(),  DEC);
-  minute = String(datetime.minute(), DEC);
-  second = String(datetime.second(), DEC);
+  //minute = String(datetime.minute() , DEC);
+  //second = String(datetime.second(), DEC);
 
   // concatenates the strings defined above into date and time
   time = month + "/" + day + " " + hour + ":" + minute + ":" + second;
@@ -195,7 +211,7 @@ int logData(){
     dataFile.print(",");
     dataFile.println(timeElapsed);
     dataFile.close();
-  //Serial.println(F("File successfully written..."));
+    //Serial.println(F("File successfully written..."));
   }
   power_twi_disable();  // this reduces power consumption
   power_spi_disable();  // this reduces power consumption
@@ -214,14 +230,14 @@ void printDigits(byte digits) {
 
 
 // function for entering sleep mode to save power
-void enterSleep(){
-  power_usart0_disable();// Serial (USART) 
+void enterSleep() {
+  power_usart0_disable();// Serial (USART)
   sleep_enable();
   attachInterrupt(0, pinInterrupt, RISING);
   lastState = 0;
   delay(100);
-  
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);   
+
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   cli();
   sleep_bod_disable();
   sei();
@@ -231,7 +247,7 @@ void enterSleep(){
 
 
 // function for allowing the FED to wakeup when pellet is removed
-void pinInterrupt(void){
+void pinInterrupt(void) {
   detachInterrupt(0);
   /* The program will continue from here after the WDT timeout*/
   sleep_disable(); /* First thing to do is disable sleep. */
@@ -242,7 +258,7 @@ void pinInterrupt(void){
 
 // function for printing timing information in serial monitor display
 void timecounter(long timeNow) {
-//  Serial.println(timeNow);
+  //  Serial.println(timeNow);
   int days = timeNow / day2 ;                                //number of days
   int hours = (timeNow % day2) / hour2;                       //the remainder from days division (in milliseconds) divided by hours, this gives the full hours
   int minutes = ((timeNow % day2) % hour2) / minute2 ;         //and so on...
