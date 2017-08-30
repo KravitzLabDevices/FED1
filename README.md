@@ -10,7 +10,8 @@ stepper motor, infrared beam detector, and SD card to provide feeding records of
  In this version of FED, we added 2 modifications:
    1) Customized a 3D model for a sliding door that attaches the device to Noldus's home-cage wall
    2) Updated the code to include 60 second timeout period after each pellet retrieval
-
+    
+    <img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED-London.jpg" height="200">
 
 FED is open-source - we encourage you to fork, modify, and hack it to add new functionality. We'd also love to hear about it when you do, so please <a href="mailto:lex.kravitz@nih.gov">drop us a line</a>!
 
