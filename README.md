@@ -31,12 +31,12 @@ Analysis code written in Python
 Documentation and photos
 
 + <b>FED-arduino</b>  
-The latest Arduino sketch for running FED. We've recently added a new version to the Arduino code (FED_SD_VersionB) to account for Adafruit's newely released SD shield. In order to find out whether you have SD shield version A or B, please go to the following URL: https://learn.adafruit.com/adafruit-data-logger-shield/wiring-and-config 
-
-+ Note: once coin battery is inserted in to SD shield, please don't remove it! This prevents Real Time Clock (RTC) errors.
+The latest Arduino sketch for running FED. We've recently added a new version to the Arduino code (FED_SD_VersionB) to account for Adafruit's newely released SD shield. In order to find out whether you have SD shield version A or B, please go to the following URL: https://learn.adafruit.com/adafruit-data-logger-shield/wiring-and-config
 
 + <b>hardware</b>  
 System schematic
+    + Update: once coin battery is inserted in to SD shield, please don't remove it! This prevents Real Time Clock (RTC) errors.
+    + Update: For SD shield Version B, you'll need to solder (short) the following pads together: SCL, SDA, SCK, MISO, MOSI
 
 FED was designed by a team of researchers at the National Institutes of Health, more info here: http://www.kravitzlab.com/
 
