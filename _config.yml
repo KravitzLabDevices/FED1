@@ -1,0 +1,30 @@
+# Permalinks
+#
+# Use of `relative_permalinks` ensures post links from the index work properly.
+permalink:           pretty
+# relative_permalinks: true
+
+# Setup
+title:               SnackClock
+tagline:             'by <a href="https://KravitzLab.github.io">KravitzLab</a>'
+description:         'Project updates and material from the Kravitz Lab'
+url:                 https://KravitzLab.github.io/FED
+baseurl:             https://KravitzLab.github.io/FED
+paginate:            5
+
+# About/contact
+author:
+  shortname:	       Kravitz
+  name:              Kravitz Lab
+  url:
+  email:             katrina.p.nguyen@gmail.com
+
+# Custom vars
+version:             1.0.0
+
+# Gems
+gems: [jekyll-paginate]
+markdown: kramdown
+
+# Run with:
+# bundle exec jekyll serve --baseurl ''
