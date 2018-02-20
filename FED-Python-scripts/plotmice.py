@@ -147,6 +147,7 @@ def read_all(path):
         for i in range(len(list_all)):
             if len(list_all[i]) == 0:
                 popup_msg("Some files were not read")
+		pass
     return list_all
 
 # returns the earliest common date and latest common date
