@@ -1,4 +1,9 @@
-# Feeding Experimentation Device (F.E.D.)
+This page references FED1.0, published by Nguyen et al: 
+https://www.ncbi.nlm.nih.gov/pubmed/27060385
+
+FED2.0 will be released shortly. This new version is easier to build, cheaper, and more reliable.  If you are new to FED please hold off on buildling FED1 and check this page in the next few weeks for an updated build.  If you want to check in on the status of FED2.0, please <a href="mailto:lex.kravitz@nih.gov"> send us an email. </a>.  Thanks!
+
+# Feeding Experimentation Device (FED)
 ## What is it?
 <img src="https://github.com/KravitzLab/FED/blob/master/doc/photos/FED%20front3.jpg" height="200">
 <img src="https://github.com/KravitzLab/FED/blob/master/doc/FED%20gif%202.gif" height="200">
